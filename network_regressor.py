@@ -16,11 +16,9 @@ from keras.models import Sequential
 from keras.losses import binary_crossentropy, mean_squared_error
 from keras.optimizers import SGD
 
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve, mean_squared_error
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, KBinsDiscretizer, PowerTransformer, Binarizer
 
-
-# In[19]:
 
 
 def load(name):
@@ -29,7 +27,15 @@ def load(name):
 
 def preprocess(df):
 
+    df=df.to_numpy()
+    df = StandardScaler().fit_transform(df)
     data = {}
+    for k,v in {'train':1700,'val':400,'test':len(df)-1700}.items():
+      data[k] = (df[:v,:-1].reshape(-1,2),df[:v,-1].reshape(-1,1))
+      df = df[v:,:]  
+    return data
+
+def smth_else():
     verbose = False
 
     df = df[df['PER'].between(0,20000)].sample(frac=1)
@@ -98,18 +104,18 @@ def create_and_predict(data,**kwargs):
     architecture = [
             Dense(
                 kwargs.get('neurons',32),
-                input_shape=(1,),
+                input_shape=(2,),
                 activation=act,),
             Dense(
                 kwargs.get('neurons',32),
                 activation=act,),
             Dense(
                 1,
-                activation='linear'),
+                activation='relu'),
                     ]
     model = Sequential(architecture)
     model.compile(
-                optimizer=SGD(learning_rate=kwargs.get('learning_rate',.001)),
+                optimizer=SGD(learning_rate=kwargs.get('learning_rate',.01)),
                 loss='mean_squared_error',
                 metrics='accuracy',)
     #
@@ -127,6 +133,15 @@ def create_and_predict(data,**kwargs):
     results['ytrue_test'] = data['test'][1]
     results['ypred_val'] = model.predict(data['val'][0])
     results['ypred_test'] = model.predict(data['test'][0])
+    print(f'THE RESULT FOR REGRESSION WAS: {mean_squared_error(results["ypred_test"],data["test"][1])} mse')
+    predictions = pd.DataFrame({
+                                'mass':data['test'][0][:,0].tolist()*2,
+                                'radius':data['test'][0][:,1].tolist()*2,
+                                'period':np.concatenate([data['test'][1], results['ypred_test']],0).flatten().tolist(),
+                                'type':['true value']*len(data['test'][1])+ ['predicted value']*len(data['test'][1]),
+                                 })
+    predictions.to_csv('PREDICTIONS.csv',index=False)
+    
     results['specs'] = kwargs
     #
     if kwargs.get('plot',False):
@@ -150,7 +165,7 @@ def create_and_predict(data,**kwargs):
           ax[1].set_xlim(0,1)
           ax[1].legend()
 
-        else:
+        if False:
           from scipy.optimize import curve_fit
           def f(x,a): return a*x**(3/2)
           #p, _ = curve_fit(f,data[case][0].flatten(),results['ypred_'+case].flatten())
@@ -183,7 +198,7 @@ def create_and_predict(data,**kwargs):
 
 if __name__=='__main__':
     import sys
-    create_and_predict(preprocess(load('exoplanets-only_period_and_radius.csv'),),
+    create_and_predict(preprocess(load('petit-database.csv'),),
             neurons=int(sys.argv[1]), epochs=int(sys.argv[2]),plot=True)
 
 

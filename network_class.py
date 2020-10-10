@@ -183,7 +183,7 @@ def create_and_predict(data,**kwargs):
 
 if __name__=='__main__':
     import sys
-    create_and_predict(preprocess(load('exoplanets-only_period_and_radius.csv'),),
+    create_and_predict(preprocess(load('petit-database.csv'),),
             neurons=int(sys.argv[1]), epochs=int(sys.argv[2]),plot=True)
 
 
