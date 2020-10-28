@@ -2,8 +2,7 @@
 AIFriendly learns the period based on the values for radio and the mass of the associated star
 
 <b>STATING THE PROBLEM</b>
-<i>The "famous" Kepler's third law states a proportionality that is actually mass-dependant.<br>
-If we don't include the mass for each planet then it won't be able to plot them all in a line because the log/log plot would require a different offset for each point (refer to the ending)</i>
+<i>The "famous" Kepler's third law states a mass-dependent proportionality.<br>
 <img src="images/equation.png">
 
 <b>THE DATABASE</b><br>
