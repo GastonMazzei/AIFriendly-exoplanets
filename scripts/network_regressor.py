@@ -15,6 +15,7 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.losses import binary_crossentropy, mean_squared_error
 from keras.optimizers import SGD
+from keras.callbacks import EarlyStopping
 
 from sklearn.metrics import roc_curve, mean_squared_error
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, KBinsDiscretizer, PowerTransformer, Binarizer
@@ -23,7 +24,6 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, KBinsDiscretizer
 
 def load(name):
     return pd.read_csv(name,low_memory=False).dropna().sample(frac=1)
-
 
 def preprocess(df):
 
@@ -35,60 +35,6 @@ def preprocess(df):
       df = df[v:,:]  
     return data
 
-def smth_else():
-    verbose = False
-
-    df = df[df['PER'].between(0,20000)].sample(frac=1)
-    print(df.head())
-    x, y = df.to_numpy()[:,:-1].reshape(-1,1), df.to_numpy()[:,-1].reshape(-1,1)
-
-    f,ax = plt.subplots(1,2)
-    ax[0].hist(x)
-    ax[0].set_title('x prev')
-    ax[1].hist(y)
-    ax[1].set_title('y prev')
-    if verbose: plt.show()
-    
-    if False:
-      for s in [MinMaxScaler]:#[PowerTransformer, StandardScaler]:
-        x=s().fit_transform(x)
-        y=s().fit_transform(y)
-
-    f,ax = plt.subplots(1,2)
-    ax[0].hist(x)
-    ax[0].set_title('x post')
-    ax[1].hist(y)
-    ax[1].set_title('y post')
-    if verbose: plt.show()
-    else: plt.close()
-
-    if False:
-      answ = input('please insert the radius range: e.g. (x y)')
-      rmin = float(answ.split(' ')[0])
-      rmax = float(answ.split(' ')[1])
-      y = np.asarray([[1] if rmin<x[0]<rmax else [0] for x in y])  
-    elif False:
-      y = Binarizer(threshold=np.mean(y)).fit_transform(y)    
-      #y = y
-
-    L = df.shape[0]
-    divider = {'train':slice(0,int(0.7*L)),
-               'val':slice(int(0.7*L),int((0.7+0.15)*L)),
-               'test':slice(-int(0.15*L),None),}
-
-    for k,i in divider.items():
-        data[k] = (x[i],y[i])
-        print(f'for key {k} {np.count_nonzero(data[k][1])/len(data[k][1])*100}% are non-zero')
-
-    answ = input('if you are happy with the ratio, press "y"... else "n"')
-    if answ=='y': return data
-    else: return preprocess(df)
-        
-def manage_database(name):
-  with open(name,'rb') as f:
-    data = pickle.load(f)
-  return
-    
 def create_and_predict(data,**kwargs):
     """
     kwargs: 
@@ -120,11 +66,12 @@ def create_and_predict(data,**kwargs):
                 metrics='accuracy',)
     #
     # 2) Fit
+    callback = EarlyStopping(monitor='loss', patience=5)
     results = model.fit(
             *data['train'],
-            batch_size=kwargs.get('batch_size',50),
+            batch_size=kwargs.get('batch_size',32),
             epochs=kwargs.get('epochs',50),
-            verbose=1,
+            verbose=1,callbacks=[callback],
             validation_data=data['val'],)
     #
     # 3) return results
@@ -140,13 +87,13 @@ def create_and_predict(data,**kwargs):
                                 'period':np.concatenate([data['test'][1], results['ypred_test']],0).flatten().tolist(),
                                 'type':['true value']*len(data['test'][1])+ ['predicted value']*len(data['test'][1]),
                                  })
-    predictions.to_csv('PREDICTIONS.csv',index=False)
+    predictions.to_csv('database/network-regression-predictions.csv',index=False)
     
     results['specs'] = kwargs
     #
     if kwargs.get('plot',False):
         regression = True
-        case = 'val'
+        case = 'test'
         f, ax = plt.subplots(1,3)
         if not regression:
           fpr, tpr, treshold = roc_curve(
@@ -157,26 +104,10 @@ def create_and_predict(data,**kwargs):
           weights = {0:[],1:[]}
           for i,x in enumerate(results['ypred_'+case]):
             weights[data[case][1][i][0]] += [x[0]]
-
-          #sns.distplot(data=pd.DataFrame(weights),ax=ax[1],kde=False)
        
           ax[1].hist(weights[0],label='0',alpha=0.5)
           ax[1].hist(weights[1],label='1',alpha=1)
           ax[1].set_xlim(0,1)
-          ax[1].legend()
-
-        if False:
-          from scipy.optimize import curve_fit
-          def f(x,a): return a*x**(3/2)
-          #p, _ = curve_fit(f,data[case][0].flatten(),results['ypred_'+case].flatten())
-          p, _ = curve_fit(f,data[case][0].flatten(),data[case][1].flatten())
-          print(f'\n\n\n\n{p}\n\n\n\n')
-          new_x = np.linspace(min(data[case][0]),max(data[case][0]),1000)
-          ax[1].scatter(data[case][0],data[case][1],label='true values '+case,c='r')
-          ax[1].scatter(data[case][0],results['ypred_'+case],label='predicted values '+case,c='b')
-          ax[1].scatter(new_x,[f(q,p[0]) for q in new_x],label=r'$T \propto R^{\frac{3}{2}}$',c='g',alpha=0.5) 
-          ax[1].set_xlabel('$\propto$ T')
-          ax[1].set_ylabel('$\propto$ Radius')
           ax[1].legend()
 
         ax[2].plot(results['accuracy'],c='b',label='train')
@@ -186,19 +117,12 @@ def create_and_predict(data,**kwargs):
         ax[2].legend()
         ax[2].set_ylim(0,1)
         plt.show()
-        if False:
-            plt.plot(
-                *roc_curve(
-                    results['ytrue_test'], results['ypred_test']
-                        )[:-1])
     return results
 
 
-# In[ ]:
-
 if __name__=='__main__':
     import sys
-    create_and_predict(preprocess(load('petit-database.csv'),),
-            neurons=int(sys.argv[1]), epochs=int(sys.argv[2]),plot=True)
+    create_and_predict(preprocess(load('database/filtered-database.csv'),),
+            neurons=int(sys.argv[1]), epochs=int(sys.argv[2]),plot=False)
 
 
