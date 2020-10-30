@@ -67,7 +67,7 @@ bash generate_gallery.sh
 ---
 
 
-<b>About the dataset</b>
+<b>About the dataset</b><br>
 <i>1.8k planets were used for training<br>
 0.4k planets were used for validation<br>
 0.4k planets were used for testing<br></i>
