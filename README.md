@@ -15,7 +15,7 @@ bash run-all.sh
 <img src="static/equation.png">
 <br>
 <i>The law can be qualitatively put to test by plotting the cube of the radius vs the mass times the square of the period. The conclusion is that all points lie on a line.</i>
-<img src="static/kepler-third-law.png" height=650 width=650>
+<img src="static/kepler-third-law.png"  height="650" width="650">
 <br>
 <sub><i>Actually the 'radius' is the semi-major axis given that the model is based on ellipses rather than in circles</i></sub>
 <br>
@@ -54,7 +54,7 @@ bash generate_regression.sh
 bash generate_gallery.sh
 ```
 
-<img src="static/testing-predictions-2d.png" height=650 width=650><img src="static/testing-predictions.png">
+<img src="static/testing-predictions-2d.png" height="650" width="650"><img src="static/testing-predictions.png">
 
 ---
 
