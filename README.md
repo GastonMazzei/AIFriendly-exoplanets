@@ -54,7 +54,13 @@ bash generate_regression.sh
 bash generate_gallery.sh
 ```
 
-<p align="center"><img src="static/testing-predictions-2d.png" width="400" height="400"></p><img src="static/testing-predictions.png">
+<img src="static/testing-predictions.png">
+<br>
+<b>view the regression in 3-D</b>
+<br>
+<p align="center"><img src="static/testing-predictions-2d.png" width="400" height="400"></p>
+<br>
+<b>view the regression in 2-D</b>
 
 ---
 
