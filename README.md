@@ -12,10 +12,10 @@ bash run-all.sh
 <h2><p align="center">1) Intro - a problem solved by Kepler in the year 1620 </p></h2>
 <b>Kepler's third law quantifies a mass-dependent proportionality between the orbital radius and the orbital period</b><br>
 <i>(left)</i>Newton's equation for the gravitational pull and the radial acceleration, <i>(middle)</i> rearrangement of the factors and <i>(right)</i> Kepler's law.
-<img src="images/equation.png">
+<img src="static/equation.png">
 <br>
 <i>The law can be qualitatively put to test by plotting the cube of the radius vs the mass times the square of the period. The conclusion is that all points lie on a line.</i>
-<img src="images/kepler-third-law.png">
+<img src="static/kepler-third-law.png">
 <br>
 <sub><i>Actually the 'radius' is the semi-major axis given that the model is based on ellipses rather than in circles</i></sub>
 <br>
@@ -39,7 +39,7 @@ bash generate_classification.sh
 ```
 
 <br>
-<img src="static/testing-predictions-2d.png"><img src="static/results.png"><br>
+<img src="static/results.png"><br>
 <i>Classification results: (left) ROC-curve, (middle) output weights per category and (right) training metrics.</i>
 
 ---
@@ -54,7 +54,7 @@ bash generate_regression.sh
 bash generate_gallery.sh
 ```
 
-<img src="static/testing-predictions-2d.png"><img src="static/testing-predictions.png">
+<img src="static/testing-predictions-2d.png" height=250, width=250><img src="static/testing-predictions.png">
 
 ---
 
